@@ -52,7 +52,7 @@
         <div class="row">
 
             <div class="col-sm-12">
-                
+
                 <form action="{{route('admin.users.store')}}" method="post" id="myform">
                 @csrf
                     <div class="card">
@@ -60,7 +60,7 @@
                         <div class="card-header">
 
                             <div class="row">
-                                
+
                                 <div class="col-sm-8"><h5>Create New User</h5></div>
                                 <div class="col-sm-4">
                                     <button type='button' id="AddBtn" class="btn-info btn-md" onclick="addRow();"><i class="fa fa-plus"></i></button>
@@ -77,7 +77,7 @@
                             <button class="btn btn-secondary">Next</button>
                         </div>
                     </div>
-                
+
                 </form>
 
             </div>
@@ -91,6 +91,9 @@
 <script src="{{asset('backend/js/dashboard/default.js')}}"></script>
 <script>
 var PackageList = <?php echo  (count($packages) > 0) ? json_encode($packages) : ''; ?>;
+
+console.log(PackageList)
+
 var addId = 0;
 function addRow() {
     let selectOption = '<option value="">select Package</option>';
@@ -100,7 +103,7 @@ function addRow() {
         if(pCnt > 0)
         {
             for (let index = 1; index <= pCnt; index++) {
-                selectOption += '<option value="'+value['package_id']+'" data-index="'+mainIndex+'">'+value['package_name']+'</option>';
+                selectOption += '<option value="'+value['package_id']+'-'+value['payments_id']+'"  data-index="'+mainIndex+'">'+value['package_name']+'</option>';
                 mainIndex++;
             }
         }
@@ -150,6 +153,7 @@ function CheckUniqueEmail(email,id) {
 }
 
 function changeOtion(obj) {
+    console.log(obj)
     let isSelected = true;
     let selOptionId = $(obj).attr('id');
     let selOptionIndex = $('#'+selOptionId+' option:selected').data('index');
@@ -177,12 +181,12 @@ function changeOtion(obj) {
         if(jQuery.inArray( parseInt(selValue), [7,8] ) !== -1) {
             UnlimitedShareCount+= 1;
         }
-        
+
         if(!isSelected)
             $('.packageSelect option[data-index="'+selOptionIndex+'"]').attr('disabled',false);
-        
+
     });
-    
+
     if(parseInt($('#'+selOptionId+' option:selected').val()) === -1) {
         $('#spiDiv'+index).show();
         $('#spiDiv'+index).find('input').attr('required',true);

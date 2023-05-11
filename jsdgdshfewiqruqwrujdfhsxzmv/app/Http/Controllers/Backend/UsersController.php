@@ -41,28 +41,38 @@ class UsersController extends Controller
     public function create()
     {
         $packages = DB::select('SELECT payments.id AS payments_id,packages.package_name,payments.package_id,payments.number_of_packages,(SELECT count(1) FROM payments_users WHERE payments_users.payment_id = payments.id AND payments_users.package_id = payments.package_id) AS usedCnt
-        FROM payments 
-        INNER JOIN packages ON packages.package_id = payments.package_id 
+        FROM payments
+        INNER JOIN packages ON packages.package_id = payments.package_id
         WHERE payments.user_id = '.auth()->user()->id);
+
 
         return view('backend.users.create',compact('packages'));
     }
-    
+
     public function store(Request $request)
     {
+
+//        $sss = explode('-', $request->user_package);
+//        dd($request->user_package);
+
         $AllPostData = $request->all();
+
+
+
         if(isset($AllPostData['user_email']) && !empty(isset($AllPostData['user_email']))) {
-            
-            $package = Package::get()->toArray();  
+
+            $package = Package::get()->toArray();
             $country = Country::get()->toArray();
 
             $countryIds = (!empty($country)) ? array_column($country,'Name','ID') : [];
 
             foreach ($AllPostData['user_email'] as $key => $value) {
 
-                $package_id = $AllPostData['user_package'][$key];
+                $pakAndPayCheck = explode('-', $AllPostData['user_package'][$key]);
+                $package_id = $pakAndPayCheck[0];
+                $payment_id = $pakAndPayCheck[1];
 
-                // user create 
+                // user create
                 $verification_code = mt_rand(1000, 9999);
 
                 $password = $this->randomPassword();
@@ -82,7 +92,7 @@ class UsersController extends Controller
 
                 if(!empty($package_id)) {
                     if((int)$package_id !== -1)  {
-                        
+
                         $selPackage = array_values(array_filter($package,function($var) use($package_id) {
                             return ($var['package_id'] == $package_id);
                         }));
@@ -107,7 +117,7 @@ class UsersController extends Controller
                             'email' => $value,
                         ]);
 
-                        $paymentDt = Payment::where('package_id',$package_id)->where('user_id',auth()->user()->id)->first();
+                        $paymentDt = Payment::where('package_id',$package_id)->where('user_id',auth()->user()->id)->find($payment_id);
 
                         if ($paymentDt !== null) {
                             PaymentsUsers::create([
@@ -128,7 +138,7 @@ class UsersController extends Controller
                             'user_id' => $user->id,
                             'country_code' => '+1',
                         ]);
-                        
+
                     }
 
                 }
@@ -153,7 +163,7 @@ class UsersController extends Controller
                 $message->from('no_reply@corespl.com',$data['subject']);
 
             });
-        }else if($type == 2) { 
+        }else if($type == 2) {
             Mail::send('mail.customer-ontime-password', $data, function ($message) use ($data) {
 
                 $message->to($data['email'], $data['name'])->subject($data['subject']);
@@ -171,7 +181,7 @@ class UsersController extends Controller
         if($user)
         {
             if($user->email_verified_at) {
-                
+
                 $msg = 'Your email already verified!';
 
             } else {
@@ -180,7 +190,7 @@ class UsersController extends Controller
                 $user->password = Hash::make($password);
                 $user->email_verified_at = date('Y-m-d H:i:s');
                 $user->update();
-                
+
                 //send email for customers password
                 $this->sendMail(['name' => $user->name,'subject' => 'Email One time Password','email' => $user->email,'password'=>$password],2);
 
@@ -203,7 +213,7 @@ class UsersController extends Controller
     }
 
     public function destory($id) {
-        
+
         User::whereRaw('md5(id) = "'.$id.'"')->delete();
 
         return redirect()->route('admin.users.index')->with('success', 'user removed successfully');
@@ -211,7 +221,7 @@ class UsersController extends Controller
     }
 
     public function edit($id) {
-        
+
         $user = User::whereRaw('md5(id) = "'.$id.'"')->first();
 
         return view('backend.users.update',compact('user'));
@@ -235,15 +245,15 @@ class UsersController extends Controller
     }
 
     /**
-     * assign package one user to another users 
+     * assign package one user to another users
     */
     public function reassignPackage(Request $request) {
-        //get user details 
-        $user = User::where('id',$request->user_id)->first();
+        //get user details
+        $user = User::find($request->user_id);
 
         if(!empty($user)) {
 
-            //get package details 
+            //get package details
             $package = Package::where('package_id',$user->package_id)->first();
 
             if (!empty($package)) {
@@ -251,22 +261,24 @@ class UsersController extends Controller
                 $user->package_id = 0;
                 $user->save();
 
-                $newUser = User::where('id',$request->new_user_id)->first();
+                $newUser = User::find($request->new_user_id);
                 if (!empty($newUser)) {
                     $newUser->package_id = $package->package_id;
                     $newUser->save();
                 }
 
-                //customer package 
+                //customer package
                 $custPackage = CustomerPackage::where('customer_id',$user->id)->where('package_id',$package->package_id)->first();
 
                 if (!empty($custPackage)) {
-                    CustomerPackage::where('id',$custPackage->id)->update(['customer_id'=>$request->new_user_id]);
-                    
 
-                    $packUser = PackageUser::where('package_user_id',$request->user_id)->where('package_id',$custPackage->id)->first();
+                    $custPackage->update(['customer_id'=>$request->new_user_id]);
+
+//                    CustomerPackage::where('id',$custPackage->id)->update(['customer_id'=>$request->new_user_id]);
+
+                    $packUser = PackageUser::where('package_user_id', $user->id)->where('package_id',$custPackage->id)->first();
                     if (!empty($packUser)) {
-                        PackageUser::where('id',$packUser->id)->update([
+                        $packUser->update([
                             'package_user_id' => $newUser->id,
                             'package_id' => $custPackage->id,
                             'name' => $newUser->name,
@@ -276,10 +288,10 @@ class UsersController extends Controller
 
                     $paymentUser = PaymentsUsers::where('user_id',$user->id)->where('package_id',$package->package_id)->first();
                     if (!empty($paymentUser)) {
-                        PaymentsUsers::where('id',$paymentUser->id)->update(['user_id'=>$request->new_user_id]);
+                        $paymentUser->update(['user_id' => $newUser->id]);
                     }
                 }
-                
+
                 return redirect()->route('admin.users.index')->with('success', 'user reassign package successfully');
             } else {
                 return redirect()->route('admin.users.index')->with('error', 'user details not found');
