@@ -129,6 +129,7 @@ class Subscription
 
             $paymentId = implode(",",$paymentId);
 
+
             return auth()->user()->checkoutCharge($total*100, $package_name,
 
             1,

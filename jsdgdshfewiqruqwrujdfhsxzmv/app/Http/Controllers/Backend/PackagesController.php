@@ -68,9 +68,10 @@ class PackagesController extends Controller
 
     public function cancel($paymentId)
     {
-        foreach($paymentId as $payment){
+        $ids = explode(',', $paymentId);
 
-            Payment::destroy($payment);
+        foreach($ids as $id){
+            Payment::find($id)->delete();
         }
 
         return redirect()->route('admin.packages.index')->with('danger', 'Something went wrong please try again');
