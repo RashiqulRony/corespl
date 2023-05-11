@@ -45,18 +45,14 @@ class PackagesController extends Controller
     public function create()
     {
         $countries = Country::orderByRaw("CASE WHEN id = 2 THEN 0 ELSE 1 END ASC")->get();
-
         $packages = Package::get();
-
         return view('backend.package.create',compact('countries', 'packages'));
     }
 
     public function store(Request $request)
     {
         $package = Package::get()->toArray();
-
         $user = auth()->user();
-
         return $this->subscriptionService->purchasePackage($package, $request->all());
     }
 
@@ -69,11 +65,9 @@ class PackagesController extends Controller
     public function cancel($paymentId)
     {
         $ids = explode(',', $paymentId);
-
         foreach($ids as $id){
             Payment::find($id)->delete();
         }
-
         return redirect()->route('admin.packages.index')->with('danger', 'Something went wrong please try again');
     }
 }

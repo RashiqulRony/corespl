@@ -49,7 +49,7 @@
 
     <div class="container-fluid">
 
-    
+
         <form action="{{route('admin.packages.store')}}" method="post" id="myform">
         @csrf
 
@@ -62,13 +62,13 @@
                         <div class="card-header">
 
                             <div class="row">
-                                
+
                                 <div class="col-sm-8"><h5>Create New Package</h5></div>
                             </div>
                         </div>
 
                         <div class="card-body">
-                            
+
                             <div class="row">
                                 <div class="col-lg-12 col-sm-12">
                                     <div class="row">
@@ -102,7 +102,7 @@
                                                 <div class="row" id="packageList">
 
                                                     @foreach ($packages as $key => $package )
-                                                    
+
                                                     @if (strtolower($countries[0]->Name) == strtolower($package->call_country))
 
                                                     <div class="col-sm-6">
@@ -114,7 +114,7 @@
                                                                 <div class="media-body">
                                                                     <div class="row">
                                                                         <div class="col-md-8">
-                                                                            <h6 class="mt-0 mega-title-badge">{{$package->package_name}} 
+                                                                            <h6 class="mt-0 mega-title-badge">{{$package->package_name}}
                                                                                 <br>  <span class="badge badge-secondary pull-right digits mt-1" style="float: left;">USD {{$package->price}} </span>
                                                                             </h6>
                                                                             <br>
@@ -125,8 +125,8 @@
                                                                             <input type="hidden" name="package_id[]" value="{{$package->package_id}}" />
                                                                             <input style="width:45px;border: solid #000 1px;"  min="0" id="number23{{$key}}" class="package-number packageInput" onchange="changePrice('number23{{$key}}');" type="number" name="package_qty[]" value="0" data-a="{{$key}}" data-price="{{$package->price}}" data-name="{{$package->package_name}}" data-id="{{$package->package_id}}" max="20">
                                                                         </div>
-                                                                    </div>                                                    
-                                                                    
+                                                                    </div>
+
                                                                 </div>
 
                                                             </div>
@@ -166,7 +166,7 @@
                             </div>
                             <ul class="qty" id="PackageCost">
 
-                                
+
 
                             </ul>
 
@@ -211,7 +211,7 @@ var PackageList = <?php echo  (count($packages) > 0) ? json_encode($packages) : 
 var countries = <?php echo  (count($countries) > 0) ? json_encode($countries) : ''; ?>;
 $('#exampleFormControlSelect9').on('change',function(){
     let country = ($('#exampleFormControlSelect9 option:selected').text()).toLowerCase();
-    
+
     let filterPackage = PackageList.filter( function(value,index) {
         return (country == (value['call_country']).toLowerCase())
         //console.log(value['call_country']);
@@ -229,28 +229,29 @@ $('#exampleFormControlSelect9').on('change',function(){
     let packageList = '';
     $.each(filterPackage,function(index,value){
         let idVal = 'number23'+index;
-        packageList += '<div class="col-sm-6">'+
-                            '<div class="card">'+
-                                '<div class="media p-20">'+
-                                    '<div class="media-body">'+
-                                        '<div class="row">'+
-                                            '<div class="col-md-8">'+
-                                                '<h6 class="mt-0 mega-title-badge">'+value['package_name'] +
-                                                    '<br>  <span class="badge badge-secondary pull-right digits mt-1" style="float: left;">USD '+value['price']+' </span>'+
-                                                '</h6>'+
-                                                '<br>'+
-                                                '<p class="mt-1">Package Type: '+value['package_type']+'</p>'+
-                                            '</div>'+
-                                            '<div class="col-md-4">'+
-                                                '<label><b>Qty:</b></label>'+
-                                                '<input type="hidden" name="package_id[]" value="'+value['package_id']+'" />'+
-                                                '<input style="width:45px;border: solid #000 1px;"  min="0" id="number23'+index+'" class="package-number packageInput" type="number" onchange="changePrice(\''+idVal+'\');" name="package_qty[]" value="0" data-a="'+index+'" data-price="'+value['price']+'" data-name="'+value['package_name']+'" data-id="'+value['package_id']+'" max="20">'+
-                                            '</div>'+
-                                        '</div>'+                                              
-                                    '</div>'+
-                                '</div>'+
-                            '</div>'+
-                        '</div>';
+        packageList +=
+            '<div class="col-sm-6">' +
+                '<div class="card">' +
+                    '<div class="media p-20">' +
+                        '<div class="media-body">' +
+                            '<div class="row">' +
+                                '<div class="col-md-8">' +
+                                    '<h6 class="mt-0 mega-title-badge">' + value['package_name'] +
+                                        '<br>  <span class="badge badge-secondary pull-right digits mt-1" style="float: left;">USD ' + value['price'] + ' </span>' +
+                                    '</h6>' +
+                                    '<br>' +
+                                    '<p class="mt-1">Package Type: ' + value['package_type'] + '</p>' +
+                                '</div>' +
+                                '<div class="col-md-4">' +
+                                    '<label><b>Qty:</b></label>' +
+                                    '<input type="hidden" name="package_id[]" value="' + value['package_id'] + '" />' +
+                                    '<input style="width:45px;border: solid #000 1px;"  min="0" id="number23' + index + '" class="package-number packageInput" type="number" onchange="changePrice(\'' + idVal + '\');" name="package_qty[]" value="0" data-a="' + index + '" data-price="' + value['price'] + '" data-name="' + value['package_name'] + '" data-id="' + value['package_id'] + '" max="20">' +
+                                '</div>' +
+                            '</div>' +
+                        '</div>' +
+                    '</div>' +
+                '</div>' +
+            '</div>';
     });
 
     $('#packageList').html(packageList);
@@ -263,17 +264,17 @@ function changePrice(id = ''){
     let pid = 0;
     selectPackageArr = [];
     $(".package-number").each(function(index,value){
-        let tempNumber = parseInt($(value).val()); 
+        let tempNumber = parseInt($(value).val());
         let tempPrice = $(value).data("price");
 
         if (tempNumber > 0)
         {
             $('#PackageCost').append('<li>'+$(value).data("name")+':<span class="package-cost">$'+(parseFloat(tempPrice) * parseInt(tempNumber)) +'</span></li>');
-             
+
             packagePrice = parseFloat(packagePrice) + (parseFloat(tempPrice) * parseInt(tempNumber));
         }
 
-    });   
+    });
 
     $("#total-cost").text('$' + packagePrice);
 }
